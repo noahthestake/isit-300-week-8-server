@@ -1,0 +1,4 @@
+week8.test {
+	tls /certs/week8.test.pem /certs/week8.test-key.pem
+	reverse_proxy app:3000
+}

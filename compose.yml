@@ -1,0 +1,44 @@
+# Instructor demo — finished Week 8 baseline.
+# App stays on 3010 so a class scaffold can keep port 3000.
+# Caddy publishes 80 and 443 for https://week8.test.
+# Bun runs src/index.ts directly. No Node image and no compile step.
+# Image: https://hub.docker.com/r/oven/bun
+
+services:
+  app:
+    build: .
+    # bun --watch src/index.ts is a relative path. /workspace matches the Dockerfile WORKDIR, so the command finds src/ and public/.
+    working_dir: /workspace
+    volumes:
+      # Host project over /workspace, so a save is what Bun reloads. This also covers files that were copied into the image.
+      - .:/workspace
+      # SQLite writes data/app.db. This bind mount keeps that file on the host when the container is recreated.
+      - ./data:/workspace/data
+      # Named volume on top of the project mount, so the Linux packages from the image stay installed. A Mac node_modules folder would not run here.
+      - node_modules:/workspace/node_modules
+    ports:
+      - "3010:3000"
+    command: ["bun", "--watch", "src/index.ts"]
+
+  caddy:
+    image: caddy:2
+    depends_on:
+      - app
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      # The proxy rules live in the repo. Read-only so the container cannot rewrite Caddyfile.
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      # mkcert leaf for week8.test. Created by setup-https.sh. Not committed.
+      - ./certs:/certs:ro
+      # Local CA and certificates. Keeping them in a volume means a restart does not mint a new cert.
+      - caddy_data:/data
+      # Caddy's saved config. Same reason: it should outlive the container.
+      - caddy_config:/config
+
+# Named volumes below are Compose storage, not folders in the repo.
+volumes:
+  node_modules:
+  caddy_data:
+  caddy_config:
