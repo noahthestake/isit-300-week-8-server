@@ -37,6 +37,13 @@ services:
       # Caddy's saved config. Same reason: it should outlive the container.
       - caddy_config:/config
 
+    frontend:
+      image: nginx:alpine
+      ports:
+        - "8080:80"
+      volumes:
+        - ./frontend:/usr/share/nginx/html:ro
+
 # Named volumes below are Compose storage, not folders in the repo.
 volumes:
   node_modules:
