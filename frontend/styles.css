@@ -4,3 +4,12 @@
   grid-template-columns: 1fr 1fr 1fr;
   gap: 20px;
 }
+
+form {
+    margin-bottom: 20px;
+}
+
+.noteBox {
+    border: 1px solid black;
+    padding: 10px;
+}
